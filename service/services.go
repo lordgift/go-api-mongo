@@ -97,9 +97,11 @@ func (s *Service) register(c *gin.Context) {
 	isDuplicated,err := s.merchantService.IsDuplicatedBankAccount(register.BankAccount)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 	if isDuplicated {
 		c.AbortWithStatusJSON(http.StatusBadRequest, bson.M{"message":"duplicated bank account!"})
+		return
 	}
 
 
@@ -111,6 +113,7 @@ func (s *Service) register(c *gin.Context) {
 		merchant, err := s.merchantService.Register(register)
 		if err != nil {
 			c.AbortWithError(http.StatusInternalServerError, err)
+			return
 		}
 
 		c.JSON(http.StatusOK, merchant)
