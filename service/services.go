@@ -76,7 +76,7 @@ usr,pwd);
 	}))
 	merchant.GET("/:id", s.findMerchant)
 	merchant.POST("/:id", s.updateMerchant)
-	merchant.GET("/:id/products", s.all)
+	merchant.GET("/:id/products", s.getProducts)
 	merchant.POST("/:id/product", s.all)
 	merchant.POST("/:id/product/:product_id", s.all)
 	merchant.DELETE("/:id/product/:product_id", s.all)
@@ -151,6 +151,25 @@ func (s *Service) updateMerchant(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, merchants)
+}
+
+func (s *Service) getProducts(c *gin.Context) {
+	id := c.Param("id")
+	var merchant persistence.Merchant
+	err := c.ShouldBindJSON(&merchant)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+
+	products, err := s.merchantService.AllProduct(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"object":  "error",
+			"message": fmt.Sprintf("db: query error: %s", err),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, products)
 }
 
 func (s *Service) all(c *gin.Context) {

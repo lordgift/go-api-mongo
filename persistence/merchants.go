@@ -26,6 +26,7 @@ type MerchantService interface {
 	IsDuplicatedBankAccount(bankAccount string) (bool, error)
 	FindById(id string) (Merchant, error)
 	UpdateById(id string, merchant Merchant) (Merchant, error)
+	AllProduct(id string) ([]Product, error)
 
 	All() ([]Merchant, error)
 }
@@ -63,6 +64,15 @@ func (m *MerchantServiceImp) UpdateById(id string, merchant Merchant) (Merchant,
 		panic(err)
 	}
 	return merchant, err
+}
+
+func (m *MerchantServiceImp) AllProduct(merchantId string) ([]Product, error) {
+	var merchant Merchant
+	err := m.Collection.FindId(bson.ObjectIdHex(merchantId)).Select(bson.M{"products": 1}).One(&merchant)
+	if err != nil {
+		panic(err)
+	}
+	return merchant.Products, nil
 }
 
 func (m *MerchantServiceImp) All() ([]Merchant, error) {
