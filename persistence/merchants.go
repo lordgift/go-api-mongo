@@ -12,7 +12,7 @@ type Merchant struct {
 	Username    string `json:"username"`
 	Password    string `json:"password"`
 	Name        string `json:"name"`
-	BankAccount string `json:"bank_account"`
+	BankAccount string `json:"bank_account" bson:"bankAccount"`
 }
 
 type MerchantService interface {
