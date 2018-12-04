@@ -6,11 +6,8 @@ import (
 )
 
 func main() {
-
-	// os.Setenv("DATABASE_URL", "mongodb://lordgift:gotraining@database:27017/merchants")
+	//some server need environment variable for listen&serve.
 	os.Setenv("PORT", "8000")
-
-	// service.CreateService()
 
 	s := service.CreateService()
 	r := service.SetupRoute(s)

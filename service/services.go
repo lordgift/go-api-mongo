@@ -1,9 +1,11 @@
 package service
 
 import (
+	"merchants/util"
 	"merchants/persistence"
 	"time"
 	"net/http"
+	"log"
 	"fmt"
 
 	"gopkg.in/mgo.v2"
@@ -11,8 +13,7 @@ import (
 )
 
 func noSslConnect() (*mgo.Session, error) {
-	// session, err := mgo.Dial("localhost:27017")
-
+	
 	info := &mgo.DialInfo{
 		Addrs:    []string{"localhost"},
 		Timeout:  60 * time.Second,
@@ -29,11 +30,9 @@ func noSslConnect() (*mgo.Session, error) {
 }
 
 type Service struct {
-	// collection      *mgo.Collection
 	merchantService persistence.MerchantService
 	productService persistence.ProductService
 	sellService persistence.SellService
-	// bankAccountService persistence.BankAccountService
 }
 
 type Merchant struct {
@@ -69,21 +68,42 @@ func CreateService() *Service {
 func SetupRoute(s *Service) *gin.Engine {
 	r := gin.Default()
 
+	usr := util.RandStringRunes(5);
+	pwd := util.RandStringRunes(10);
+	log.Printf("** Generate Authorization **\nUsername : %s\nPassword : %s ", 
+usr,pwd);
+
 	root := r.Group("/")
-	root.POST("/merchant/register", s.All)
-	root.GET("/merchants/:id", s.All)
-	root.POST("/merchants/:id", s.All)
-	root.GET("/merchants/:id/products", s.All)
-	root.POST("/merchants/:id/product", s.All)
-	root.POST("/merchants/:id/product/:product_id", s.All)
-	root.DELETE("/merchants/:id/product/:product_id", s.All)
-	root.POST("/merchants/:id/report", s.All)
-	root.POST("/buy/product", s.All)
+	root.POST("/register", s.register)
+	root.POST("/buy/product", s.all)
+
+	merchant := root.Group("/merchant")
+	merchant.Use(gin.BasicAuth(gin.Accounts{
+		"admin": "1234",
+		//FIXME use generated password
+		//usr:pwd,
+	}))
+	merchant.GET("/:id", s.all)
+	merchant.POST("/:id", s.all)
+	merchant.GET("/:id/products", s.all)
+	merchant.POST("/:id/product", s.all)
+	merchant.POST("/:id/product/:product_id", s.all)
+	merchant.DELETE("/:id/product/:product_id", s.all)
+	merchant.POST("/:id/report", s.all)
+
 
 	return r
 }
 
-func (s *Service) All(c *gin.Context) {
+func (s *Service) register(c *gin.Context) {
+	var merchant persistence.Merchant
+	merchant.Username = util.RandStringRunes(5);
+	merchant.Password = util.RandStringRunes(10);
+	s.merchantService.Register(merchant)
+}
+
+
+func (s *Service) all(c *gin.Context) {
 	merchants, err := s.merchantService.All()
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -94,28 +114,3 @@ func (s *Service) All(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, merchants)
 }
-
-// func (s *Server) All(c *gin.Context) {
-// 	users, err := s.userService.All()
-// 	if err != nil {
-// 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-// 			"object":  "error",
-// 			"message": fmt.Sprintf("db: query error: %s", err),
-// 		})
-// 		return
-// 	}
-// 	c.JSON(http.StatusOK, users)
-// }
-
-// func (s *Server) FindByID(c *gin.Context) {
-// 	id, _ := strconv.Atoi(c.Param("id"))
-// 	users, err := s.userService.FindByID(id)
-// 	if err != nil {
-// 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-// 			"object":  "error",
-// 			"message": fmt.Sprintf("db: query error: %s", err),
-// 		})
-// 		return
-// 	}
-// 	c.JSON(http.StatusOK, users)
-// }
