@@ -96,10 +96,28 @@ usr,pwd);
 }
 
 func (s *Service) register(c *gin.Context) {
-	var merchant persistence.Merchant
-	merchant.Username = util.RandStringRunes(5);
-	merchant.Password = util.RandStringRunes(10);
-	s.merchantService.Register(merchant)
+
+	var register persistence.Merchant
+	err := c.ShouldBindJSON(&register)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+
+	isDuplicated,err := s.merchantService.IsDuplicatedBankAccount(register.BankAccount)
+	if err != nil || isDuplicated {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+
+	log.Printf("bankAccount:%s \n isDup:%v", register.BankAccount, isDuplicated)
+	if (!isDuplicated) {
+		
+		register.Username = util.RandStringRunes(5);
+		register.Password = util.RandStringRunes(10);
+
+		s.merchantService.Register(register)
+	} 
+
+
 }
 
 
