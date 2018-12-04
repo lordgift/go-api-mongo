@@ -75,7 +75,7 @@ usr,pwd);
 		//usr:pwd,
 	}))
 	merchant.GET("/:id", s.findMerchant)
-	merchant.POST("/:id", s.all)
+	merchant.POST("/:id", s.updateMerchant)
 	merchant.GET("/:id/products", s.all)
 	merchant.POST("/:id/product", s.all)
 	merchant.POST("/:id/product/:product_id", s.all)
@@ -134,6 +134,24 @@ func (s *Service) findMerchant(c *gin.Context) {
 	c.JSON(http.StatusOK, merchants)
 }
 
+func (s *Service) updateMerchant(c *gin.Context) {
+	id := c.Param("id")
+	var merchant persistence.Merchant
+	err := c.ShouldBindJSON(&merchant)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+
+	merchants, err := s.merchantService.UpdateById(id, merchant)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"object":  "error",
+			"message": fmt.Sprintf("db: query error: %s", err),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, merchants)
+}
 
 func (s *Service) all(c *gin.Context) {
 	merchants, err := s.merchantService.All()
