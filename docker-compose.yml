@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+ database:
+   image: bitnami/mongodb:latest
+   ports:
+     - 27017:27017
+   environment:
+     MONGODB_USERNAME: lordgift
+     MONGODB_PASSWORD: gotraining
+     MONGODB_DATABASE: merchants
+   
