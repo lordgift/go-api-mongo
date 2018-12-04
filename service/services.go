@@ -32,7 +32,6 @@ func noSslConnect() (*mgo.Session, error) {
 
 type Service struct {
 	merchantService persistence.MerchantService
-	productService persistence.ProductService
 	sellService persistence.SellService
 }
 
@@ -44,20 +43,11 @@ type Merchant struct {
 func CreateService() *Service {
 	session, _ := noSslConnect()
 	db := session.DB("merchants")
-	// err := db.C("test").Insert(Merchant{1,"MYSHOP", "xxxxx-x"})
-	// if err != nil {
-	// 	panic(err)
-	// }
 
 	s := &Service{
-		// collection: c,
 		merchantService: &persistence.MerchantServiceImp{
 			Collection: db.C("merchants"),
-		},
-		productService: &persistence.ProductServiceImp{
-			Collection: db.C("products"),
-		},
-		
+		},		
 		sellService: &persistence.SellServiceImp{
 			Collection: db.C("sell"),
 		},

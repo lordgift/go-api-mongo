@@ -6,11 +6,19 @@ import (
 )
 
 type Merchant struct {
-	// ID          int64  `json:"id"`
+	Id bson.ObjectId `bson:"_id,omitempty"`
 	Username    string `json:"username"`
 	Password    string `json:"password"`
 	Name        string `json:"name"`
 	BankAccount string `json:"bank_account" bson:"bankAccount"`
+	Products    []Product
+}
+
+type Product struct {
+	Id bson.ObjectId  `bson:"_id,omitempty"`
+	Name   string  `json:"name"`
+	Price  float64 `json:"price"`
+	Amount int16   `json:"amount"`
 }
 
 type MerchantService interface {
