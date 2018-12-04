@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"github.com/gin-gonic/gin"
 )
 
@@ -104,20 +105,26 @@ func (s *Service) register(c *gin.Context) {
 	}
 
 	isDuplicated,err := s.merchantService.IsDuplicatedBankAccount(register.BankAccount)
-	if err != nil || isDuplicated {
-		c.AbortWithError(http.StatusBadRequest, err)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
+	if isDuplicated {
+		c.AbortWithStatusJSON(http.StatusBadRequest, bson.M{"message":"duplicated bank account!"})
 	}
 
-	log.Printf("bankAccount:%s \n isDup:%v", register.BankAccount, isDuplicated)
+
 	if (!isDuplicated) {
 		
 		register.Username = util.RandStringRunes(5);
 		register.Password = util.RandStringRunes(10);
 
-		s.merchantService.Register(register)
+		merchant, err := s.merchantService.Register(register)
+		if err != nil {
+			c.AbortWithError(http.StatusInternalServerError, err)
+		}
+
+		c.JSON(http.StatusOK, merchant)
 	} 
-
-
 }
 
 

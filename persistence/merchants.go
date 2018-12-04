@@ -1,8 +1,6 @@
 package persistence
 
 import (
-	"log"
-
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -27,7 +25,6 @@ type MerchantServiceImp struct {
 
 func (m *MerchantServiceImp) IsDuplicatedBankAccount(bankAccount string) (bool, error) {
 	result, err := m.Collection.Find(bson.M{"bankAccount": bankAccount}).Count()
-	log.Printf("result:", result)
 	return result > 0, err
 }
 
