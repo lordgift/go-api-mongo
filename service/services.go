@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"log"
 	"fmt"
-
+	
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"github.com/gin-gonic/gin"
@@ -74,7 +74,7 @@ usr,pwd);
 		//FIXME use generated password
 		//usr:pwd,
 	}))
-	merchant.GET("/:id", s.all)
+	merchant.GET("/:id", s.findMerchant)
 	merchant.POST("/:id", s.all)
 	merchant.GET("/:id/products", s.all)
 	merchant.POST("/:id/product", s.all)
@@ -115,6 +115,20 @@ func (s *Service) register(c *gin.Context) {
 
 		c.JSON(http.StatusOK, merchant)
 	} 
+}
+
+func (s *Service) findMerchant(c *gin.Context) {
+	id := c.Param("id")
+
+	merchants, err := s.merchantService.FindById(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"object":  "error",
+			"message": fmt.Sprintf("db: query error: %s", err),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, merchants)
 }
 
 
